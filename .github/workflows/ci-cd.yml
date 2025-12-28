@@ -2,11 +2,11 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ "*" ]
     paths-ignore:
       - 'kubernetes/deployment.yaml'  # Ignore changes to this file to prevent loops
   pull_request:
-    branches: [ main ]
+    branches: [ "*" ]
     
 permissions:
   contents: read
@@ -103,7 +103,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.TOKEN }}
       
       - name: Extract metadata for Docker
         id: meta
@@ -174,7 +174,7 @@ jobs:
           # Update the deployment file directly
           sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
           
-          # Verify the change
+          #  Verify the change
           echo "Updated deployment to use image: ${NEW_IMAGE}"
           grep -A 1 "image:" kubernetes/deployment.yaml
       
