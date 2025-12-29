@@ -5,7 +5,7 @@ metadata:
   labels:
     app: tic-tac-toe
 spec:
-  replicas: 4
+  replicas: 7
   selector:
     matchLabels:
       app: tic-tac-toe
@@ -17,7 +17,7 @@ spec:
       containers:
       - name: tic-tac-toe
         image: ghcr.io/bader2424/tic-tac-game:sha-b72ea5035fe820b7cc0c0bec7c124d0274366bdf
-        # Image will be automatically updated by CI/CD pipeline hhhhh
+        # Image will be automatically updated by CI/CD pipeline 
         imagePullPolicy: Always
         ports:
         - containerPort: 80
