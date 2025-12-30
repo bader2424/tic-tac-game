@@ -4,74 +4,58 @@ on:
   push:
     branches: [ "*" ]
     paths-ignore:
-      - 'kubernetes/deployment.yaml'  # Ignore changes to this file to prevent loops    
+      - 'kubernetes/deployment.yaml'
   pull_request:
     branches: [ "*" ]
-    
+
 permissions:
   contents: read
-  packages: write
+
 jobs:
   test:
     name: Unit Testing
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run tests
-        run: npm test || echo "No tests found, would add tests in a real project"
+
+      - run: npm ci
+      - run: npm test || echo "No tests found"
 
   lint:
     name: Static Code Analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run ESLint
-        run: npm run lint
+
+      - run: npm ci
+      - run: npm run lint
 
   build:
     name: Build
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build project
-        run: npm run build
-      
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+
+      - run: npm ci
+      - run: npm run build
+
+      - uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: dist/
@@ -80,106 +64,93 @@ jobs:
     name: Docker Build and Push
     runs-on: ubuntu-latest
     needs: [build]
+
     env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
+      REGISTRY: docker.io
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+
     outputs:
       image_tag: ${{ steps.set_output.outputs.image_tag }}
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: dist/
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Login to GitHub Container Registry
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN }}
-      
-      - name: Extract metadata for Docker
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             type=sha,format=long
             type=ref,event=branch
             latest
-      
-      - name: Build Docker image
+
+      - name: Build image (local)
         uses: docker/build-push-action@v5
         with:
           context: .
+          load: true
           push: false
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          load: true
-      
-      - name: Run Trivy vulnerability scanner
+
+      - name: Trivy security scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
-          format: 'table'
+          image-ref: ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
           exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-      
-      - name: Push Docker image
+          ignore-unfixed: true
+
+      - name: Push image to Docker Hub
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-      
+
       - name: Set image tag output
         id: set_output
-        run: echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        run: echo "image_tag=sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
   update-k8s:
     if: github.event_name == 'push'
     name: Update Kubernetes Deployment
     runs-on: ubuntu-latest
     needs: [docker]
+
     steps:
-      - name: Checkout code 
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.TOKEN }}
-      
-      - name: Setup Git config
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Git config
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-      
-      - name: Update Kubernetes deployment file
+
+      - name: Update deployment image
         env:
-          IMAGE_TAG: sha-${{ github.sha }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          REGISTRY: ghcr.io
+          IMAGE: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:sha-${{ github.sha }}
         run: |
-          # Define the new image with tag
-          NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
-          
-          # Update the deployment file directly
-          sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
-          
-          #  Verify the change 
-          echo "Updated deployment to use image: ${NEW_IMAGE}"
-          grep -A 1 "image:" kubernetes/deployment.yaml
-      
-      - name: Commit and push changes
+          sed -i "s|image: .*|image: ${IMAGE}|g" kubernetes/deployment.yaml
+          echo "Updated image to ${IMAGE}"
+          grep image kubernetes/deployment.yaml
+
+      - name: Commit & push
         run: |
           git add kubernetes/deployment.yaml
-          git commit -m "Update Kubernetes deployment with new image tag: ${{ needs.docker.outputs.image_tag }} [skip ci]" || echo "No changes to commit"
+          git commit -m "Update image to sha-${{ github.sha }} [skip ci]" || echo "No changes"
           git push
