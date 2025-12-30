@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (DevSecOps-enabled)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
     branches: [ "*" ]
 
 permissions:
-  contents: write
+  contents: write   # Required for GitOps updates
 
 jobs:
   test:
@@ -40,10 +40,31 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+  # =========================
+  # DEVSECOPS: Dependency Scan
+  # Tool: npm audit
+  # Purpose: Detect vulnerable third-party packages early (shift-left security)
+  # =========================
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - name: Run npm audit (fail on high/critical)
+        run: |
+          npm audit --audit-level=high
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [test, lint]
+    needs: [test, lint, dependency-scan]
     steps:
       - uses: actions/checkout@v4
 
@@ -61,12 +82,11 @@ jobs:
           path: dist/
 
   docker:
-    name: Docker Build and Push
+    name: Docker Build & Security Scan
     runs-on: ubuntu-latest
     needs: [build]
 
     env:
-      REGISTRY: docker.io
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
 
     outputs:
@@ -82,52 +102,53 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
+      # =========================
+      # DEVSECOPS: Registry Authentication
+      # Purpose: Secure access to Docker Hub using secrets (no hardcoded creds)
+      # =========================
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha,format=long
-            type=ref,event=branch
-            latest
-
-      - name: Build image (local)
+      - name: Build Docker image (local)
         uses: docker/build-push-action@v5
         with:
           context: .
           load: true
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
 
-      - name: Trivy security scan
+      # =========================
+      # DEVSECOPS: Container Image Vulnerability Scan
+      # Tool: Trivy
+      # Purpose: Block images with known HIGH/CRITICAL vulnerabilities
+      # =========================
+      - name: Trivy Image Scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
-          exit-code: '1'
+          exit-code: '1'                    # Fail pipeline on findings
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
+          vuln-type: 'os,library'
 
       - name: Push image to Docker Hub
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
 
       - name: Set image tag output
         id: set_output
         run: echo "image_tag=sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
   update-k8s:
-    if: github.event_name == 'push'
-    name: Update Kubernetes Deployment
+    name: GitOps Deployment Update
     runs-on: ubuntu-latest
     needs: [docker]
 
@@ -136,21 +157,21 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Git config
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-
-      - name: Update deployment image
+      # =========================
+      # DEVSECOPS: GitOps Drift Prevention
+      # Purpose: Enforce deployments via Git, block manual cluster changes
+      # =========================
+      - name: Update Kubernetes deployment image
         env:
           IMAGE: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:sha-${{ github.sha }}
         run: |
           sed -i "s|image: .*|image: ${IMAGE}|g" kubernetes/deployment.yaml
           echo "Updated image to ${IMAGE}"
-          grep image kubernetes/deployment.yaml
 
-      - name: Commit & push
+      - name: Commit & push (GitOps)
         run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           git add kubernetes/deployment.yaml
           git commit -m "Update image to sha-${{ github.sha }} [skip ci]" || echo "No changes"
           git push
