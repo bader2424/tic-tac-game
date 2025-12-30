@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: tic-tac-toe
-        image: docker.io/bader1937/tic-tac-game:sha-8bef78d3f1569d71c485cb6f88ebd6794d3b5172
+        image: docker.io/bader1937/tic-tac-game:sha-0a6205f8ee0db426fcac47068a4bfa0774d51256
         # Image will be automatically updated by CI/CD pipeline 
     
         # Image will be automatically updated by CI/CD pipeline hhhhh
