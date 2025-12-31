@@ -1,0 +1,23 @@
+replicaCount: 4
+
+image:
+  repository: docker.io/bader1937/tic-tac-game
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+
+serviceAccount:
+  create: false
+
+containerPort: 80
