@@ -25,3 +25,6 @@ containerPort: 80
 livenessProbe:
   path: /health
   port: 80
+readinessProbe:
+  path: /health
+  port: 80
