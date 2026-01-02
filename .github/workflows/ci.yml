@@ -52,12 +52,13 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # your SonarQube token
         run: |
-          sonar-scanner \
-            -Dsonar.projectKey=bader-key \
-            -Dsonar.organization=bader-org \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=$SONAR_TOKEN
+         sonar-scanner \
+          -Dsonar.projectKey=bader-key \
+          -Dsonar.organization=your-org-key \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=$SONAR_TOKEN \
+          -Dsonar.branch.name=helm
 
   dependency-scan:
     name: Dependency Vulnerability Scan
