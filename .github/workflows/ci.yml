@@ -122,26 +122,3 @@ jobs:
       - name: Set image tag output
         id: set_output
         run: echo "image_tag=sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
-
-  update-helm:
-    name: GitOps – Update Helm values
-    runs-on: ubuntu-latest
-    needs: [docker]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Helm image tag
-        run: |
-          sed -i "s/^  tag:.*/  tag: sha-${{ github.sha }}/" helm/tic-tac-chart/values.yaml
-
-
-
-      - name: Commit & push (GitOps)
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add helm/tic-tac-chart/values.yaml
-          git commit -m "helm: update image to sha-${{ github.sha }}" || echo "No changes"
-          git push

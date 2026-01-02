@@ -1,0 +1,32 @@
+name: CD Pipeline (GitOps)
+
+on:
+  push:
+    branches:
+      - "helm"
+    paths:
+      - 'helm/**'   # only trigger CD when helm chart changes
+
+permissions:
+  contents: write
+
+jobs:
+  update-helm:
+    name: Update Helm Values & GitOps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Helm image tag
+        run: |
+          sed -i "s/^  tag:.*/  tag: ${{ github.sha }}/" helm/tic-tac-chart/values.yaml
+
+      - name: Commit & push (GitOps)
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add helm/tic-tac-chart/values.yaml
+          git commit -m "helm: update image to ${{ github.sha }}" || echo "No changes"
+          git push
