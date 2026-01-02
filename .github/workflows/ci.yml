@@ -51,8 +51,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # your SonarQube token
         run: |
           sonar-scanner \
-            -Dsonar.projectKey=tic-tac \
-            -Dsonar.organization=bader2424\
+            -Dsonar.projectKey=bader-key \
+            -Dsonar.organization=bader-org \
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=$SONAR_TOKEN
