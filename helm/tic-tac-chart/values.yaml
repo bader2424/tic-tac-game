@@ -9,6 +9,8 @@ service:
   type: ClusterIP
   port: 80
 
+containerPort: 80
+
 resources:
   limits:
     cpu: "500m"
@@ -19,8 +21,6 @@ resources:
 
 serviceAccount:
   create: false
-
-containerPort: 80
 
 livenessProbe:
   path: /
@@ -33,3 +33,7 @@ readinessProbe:
   port: 80
   initialDelaySeconds: 5
   periodSeconds: 5
+
+monitoring:
+  enabled: true       # Enable ServiceMonitor creation
+  interval: 15s      # Scrape interval

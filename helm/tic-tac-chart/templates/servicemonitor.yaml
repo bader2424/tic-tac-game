@@ -1,0 +1,15 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "tic-tac-chart.fullname" . }}-sm
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: tic-tac
+  endpoints:
+    - port: http
+      interval: {{ .Values.monitoring.interval }}
+{{- end }}
