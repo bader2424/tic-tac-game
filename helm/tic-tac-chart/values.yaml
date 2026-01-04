@@ -2,7 +2,7 @@ replicaCount: 5
 
 image:
   repository: docker.io/bader1937/tic-tac-game
-  tag: 801829a3d395b4be2f242509a997b89c77494155
+  tag: 022e3a2b57b5967b1e3e71eb80df35464d93914b
   pullPolicy: Always
 
 service:
