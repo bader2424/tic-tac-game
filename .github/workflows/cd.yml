@@ -21,7 +21,7 @@ jobs:
 
       - name: Update Helm image tag
         run: |
-          sed -i "s/^  tag:.*/  tag: ${{ github.sha }}/" helm/tic-tac-chart/values.yaml
+         sed -i "s/^  tag:.*/  tag: sha-${{ github.sha }}/" helm/tic-tac-chart/values.yaml
 
       - name: Commit & push (GitOps)
         run: |
