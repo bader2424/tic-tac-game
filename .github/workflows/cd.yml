@@ -1,11 +1,11 @@
 name: CD Pipeline (GitOps)
 
 on:
-  push:
-    branches:
-      - "helm"
-    paths:
-      - 'helm/**'   # only trigger CD when helm chart changes
+ workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    
 
 permissions:
   contents: write
