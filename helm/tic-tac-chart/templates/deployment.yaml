@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "tic-tac-chart.fullname" . }}
+  name: {{ include "tic-tac-chart.fullname" . }}--v2
   labels:
     app: tic-tac-app
 spec:
