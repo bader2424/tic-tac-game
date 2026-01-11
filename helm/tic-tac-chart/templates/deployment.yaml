@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: {{ include "tic-tac-chart.fullname" . }}
   labels:
-    app: {{ include "tic-tac-chart.name" . }}
+    app: tic-tac-app
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "tic-tac-chart.name" . }}
+      app: tic-tac-app
   template:
     metadata:
       labels:
-        app: {{ include "tic-tac-chart.name" . }}
+        app: tic-tac-app
     spec:
       containers:
         - name: {{ include "tic-tac-chart.name" . }}
@@ -20,6 +20,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 80
+              name: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
@@ -34,3 +35,8 @@ spec:
               port: {{ .Values.readinessProbe.port }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+        - name: metrics
+          image: bader1937/tic-tac-metrics:latest  # build an image with server/metrics.js
+          ports:
+            - containerPort: 8082
+              name: metrics

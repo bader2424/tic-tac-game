@@ -9,5 +9,9 @@ spec:
       targetPort: 80
       protocol: TCP
       name: http
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
+      name: metrics
   selector:
-    app: {{ include "tic-tac-chart.name" . }}
+    app: tic-tac-app

@@ -1,4 +1,4 @@
-replicaCount: 6
+replicaCount: 1
 
 image:
   repository: docker.io/bader1937/tic-tac-game
@@ -35,5 +35,5 @@ readinessProbe:
   periodSeconds: 5
 
 monitoring:
-  enabled: true       # Enable ServiceMonitor creation
-  interval: 15s      # Scrape interval
+  enabled: true
+  interval: 15s

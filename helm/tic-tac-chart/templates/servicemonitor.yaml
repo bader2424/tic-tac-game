@@ -8,8 +8,8 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: tic-tac
+      app: tic-tac-app
   endpoints:
-    - port: http
+    - port: metrics
       interval: {{ .Values.monitoring.interval }}
 {{- end }}
