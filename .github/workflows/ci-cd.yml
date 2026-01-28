@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "*" ]
     paths-ignore:
-      - 'kubernetes/deployment.yaml'  # Ignore changes to this file to prevent loops 
+      - 'kubernetes/deployment.yaml'  # Ignore changes to this file to prevent loops    
   pull_request:
     branches: [ "*" ]
     
@@ -147,6 +147,7 @@ jobs:
         run: echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
   update-k8s:
+    if: github.event_name == 'push'
     name: Update Kubernetes Deployment
     runs-on: ubuntu-latest
     needs: [docker]
