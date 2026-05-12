@@ -8,9 +8,8 @@ spec:
 
   source:
     repoURL: https://github.com/bader2424/tic-tac-game.git
-    targetRevision: helm          # 👈 branch name
-    path: helm/tic-tac-chart      # 👈 your chart path
-
+    targetRevision: helm
+    path: helm/tic-tac-chart
     helm:
       valueFiles:
         - values.yaml

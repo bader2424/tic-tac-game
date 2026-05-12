@@ -1,90 +1,156 @@
-# DevSecOps Pipeline Implementation for Tic Tac Toe Game
+# Tic Tac Toe Game
 
-![Screenshot 2025-03-04 at 7 16 48 PM](https://github.com/user-attachments/assets/7ed79f9c-9144-4870-accd-500085a15592)
-
-![image](https://github.com/user-attachments/assets/5b2813a5-f493-4665-8964-77359b5be93a)
+A React, TypeScript, and Tailwind CSS Tic Tac Toe game with a dark UI, score tracking, game history, and Docker support.
 
 ## Features
 
-- 🎮 Fully functional Tic Tac Toe game
-- 📊 Score tracking for X, O, and draws
-- 📜 Game history with timestamps
-- 🏆 Highlights winning combinations
-- 🔄 Reset game and statistics
-- 📱 Responsive design for all devices
+- Fully functional Tic Tac Toe gameplay
+- Score tracking for Player X, Player O, and draws
+- Game history with timestamps
+- Winning combination highlights
+- Reset current game or all statistics
+- Responsive dark theme
+- Dockerized production build with Nginx
 
 ## Technologies Used
 
 - React 18
 - TypeScript
+- Vite
 - Tailwind CSS
-- Lucide React for icons
+- Lucide React
+- Docker
+- Docker Compose
 
 ## Project Structure
 
-```
+```text
 src/
-├── components/
-│   ├── Board.tsx       # Game board component
-│   ├── Square.tsx      # Individual square component
-│   ├── ScoreBoard.tsx  # Score tracking component
-│   └── GameHistory.tsx # Game history component
-├── utils/
-│   └── gameLogic.ts    # Game logic utilities
-├── App.tsx             # Main application component
-└── main.tsx           # Entry point
+  components/
+    Board.tsx
+    Square.tsx
+    ScoreBoard.tsx
+    GameHistory.tsx
+  utils/
+    gameLogic.ts
+  App.tsx
+  main.tsx
+
+helm/
+  tic-tac-chart/
 ```
 
-## Game Logic
+## Local Development
 
-The game implements the following rules:
+Install dependencies:
 
-1. X goes first, followed by O
-2. The first player to get 3 of their marks in a row (horizontally, vertically, or diagonally) wins
-3. If all 9 squares are filled and no player has 3 marks in a row, the game is a draw
-4. Winning combinations are highlighted
-5. Game statistics are tracked and displayed
+```bash
+npm install
+```
 
-## Getting Started
+Run the Vite development server:
 
-### Prerequisites
+```bash
+npm run dev
+```
 
-- Node.js (v14 or higher)
-- npm or yarn
+Open:
 
-### Installation
+```text
+http://127.0.0.1:5173
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/devsecops-demo.git
-   cd devsecops-demo
-   ```
+## Production Preview Without Docker
 
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. Open your browser and navigate to `http://localhost:5173`
-
-## Building for Production
-
-To create a production build:
+Build the app:
 
 ```bash
 npm run build
-# or
-yarn build
 ```
 
-The build artifacts will be stored in the `dist/` directory.
+Run the built app locally:
 
+```bash
+npm run preview -- --host 0.0.0.0 --port 4173
+```
+
+Open:
+
+```text
+http://127.0.0.1:4173
+```
+
+## Run With Docker
+
+For this app, Docker Compose is the simplest option because the project has one web container and Compose gives a short, repeatable command with the port mapping included.
+
+If Docker Desktop is not running, use Rancher Desktop instead. Rancher Desktop can run this same Compose file through `nerdctl compose`.
+
+Build and start the app:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+```text
+http://127.0.0.1:8080
+```
+
+Run in the background:
+
+```bash
+docker compose up --build -d
+```
+
+Stop the app:
+
+```bash
+docker compose down
+```
+
+## Run With Rancher Desktop
+
+Use this when Docker Desktop is broken or closed.
+
+Make sure Rancher Desktop is running, then start the app with:
+
+```powershell
+& "C:\Program Files\Rancher Desktop\resources\resources\win32\bin\nerdctl.exe" compose up --build -d
+```
+
+Open:
+
+```text
+http://127.0.0.1:8080
+```
+
+Stop the app:
+
+```powershell
+& "C:\Program Files\Rancher Desktop\resources\resources\win32\bin\nerdctl.exe" compose down
+```
+
+## Run With Plain Docker
+
+If you do not want to use Compose:
+
+```bash
+docker build -t tic-tac-game:local .
+docker run --rm -p 8080:80 tic-tac-game:local
+```
+
+Open:
+
+```text
+http://127.0.0.1:8080
+```
+
+## Quality Checks
+
+```bash
+npm run lint
+npm run test
+npm run build
+```

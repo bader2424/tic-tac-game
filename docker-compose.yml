@@ -1,0 +1,9 @@
+services:
+  tic-tac-game:
+    build:
+      context: .
+    image: tic-tac-game:local
+    container_name: tic-tac-game
+    ports:
+      - "8080:80"
+    restart: unless-stopped

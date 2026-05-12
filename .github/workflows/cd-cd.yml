@@ -1,4 +1,4 @@
-name: CI/CD Pipeline (DevSecOps-enabled)
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     branches: ["helm"]
 
 permissions:
-  contents: write   # Required for GitOps updates
+  contents: write
 
 jobs:
   test:
@@ -36,29 +36,22 @@ jobs:
       - run: npm run lint
 
   sonar:
-    name: SonarCloud Analysis
+    name: SonarQube Cloud Analysis
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
       - uses: actions/checkout@v4
-        with: 
-          ref: helm
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: '20' 
-      - name: Install SonarScanner
-        run: npm install -g sonarqube-scanner
-      - name: Run SonarCloud Scan
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Run SonarQube Cloud scan
+        uses: SonarSource/sonarqube-scan-action@v7.2.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          sonar-scanner \
-            -Dsonar.projectKey=bader2424_tic-tac-game \
-            -Dsonar.organization=bader2424 \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.branch.name=helm
 
   dependency-scan:
     name: Dependency Vulnerability Scan
@@ -89,9 +82,7 @@ jobs:
           name: build-artifacts
           path: dist/
       - name: Generate SBOM
-        run: |
-          npm install -g cyclonedx-bom
-          cyclonedx-bom -o sbom.xml
+        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.xml
 
   docker:
     name: Docker Build & Security Scan
@@ -151,7 +142,7 @@ jobs:
 
       - name: Update Helm image tag
         run: |
-         sed -i "s/^  tag:.*/  tag: sha-${{ github.sha }}/" helm/tic-tac-chart/values.yaml
+          sed -i "s/^  tag:.*/  tag: sha-${{ github.sha }}/" helm/tic-tac-chart/values.yaml
 
       - name: Commit & push (GitOps)
         run: |

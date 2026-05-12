@@ -94,21 +94,21 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 flex flex-col items-center justify-center p-4">
-      <div className="max-w-4xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-6 bg-indigo-600 text-white text-center">
-          <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
-            <Award className="h-8 w-8" />
+    <div className="app-shell">
+      <div className="game-card">
+        <div className="game-header">
+          <h1 className="game-title">
+            <Award className="title-icon" />
             Tic Tac Toe
           </h1>
-          <p className="text-indigo-200 mt-1">A classic game reimagined</p>
+          <p className="game-subtitle">A classic game reimagined</p>
         </div>
         
-        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="game-layout">
           {/* Game section */}
-          <div className="md:col-span-2 flex flex-col items-center">
-            <div className="mb-4 text-center">
-              <h2 className="text-xl font-semibold text-indigo-800">{getStatusMessage()}</h2>
+          <div className="play-area">
+            <div className="status-wrap">
+              <h2 className="status-text">{getStatusMessage()}</h2>
             </div>
             
             <Board 
@@ -117,17 +117,17 @@ function App() {
               winningLine={winningLine}
             />
             
-            <div className="mt-6 flex gap-4">
+            <div className="actions">
               <button 
                 onClick={resetGame}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors"
+                className="primary-button"
               >
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="button-icon" />
                 New Game
               </button>
               <button 
                 onClick={resetStats}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+                className="secondary-button"
               >
                 Reset All
               </button>
@@ -135,7 +135,7 @@ function App() {
           </div>
           
           {/* Stats section */}
-          <div className="flex flex-col gap-6">
+          <div className="side-panel">
             <ScoreBoard scores={scores} />
             <GameHistory history={gameHistory} />
           </div>
