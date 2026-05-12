@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: tic-tac-game
-  tag: local
-  pullPolicy: Never
+  repository: bader1937/tic-tac-game
+  tag: sha-9d0c22bba7928726d45bc4df92d1dc5d91d71f05
+  pullPolicy: Always
 
 service:
   type: ClusterIP
