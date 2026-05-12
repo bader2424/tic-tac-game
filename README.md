@@ -2,6 +2,34 @@
 
 A React, TypeScript, and Tailwind CSS Tic Tac Toe game with a dark UI, score tracking, game history, and Docker support.
 
+## Project Screenshots
+
+### Application UI
+
+Dark themed gameplay with score tracking and game history.
+
+![Dark Tic Tac Toe gameplay](docs/screenshots/app-dark-gameplay.png)
+
+### GitOps Deployment With Argo CD
+
+Argo CD tracks the `helm` branch and deploys the Helm chart from `helm/tic-tac-chart`.
+
+![Argo CD application card](docs/screenshots/argocd-application-card.png)
+
+The application is synced and healthy, with Kubernetes resources managed from the Helm chart.
+
+![Argo CD resource tree](docs/screenshots/argocd-resource-tree.png)
+
+The Argo CD source and sync policy show the Git repository, target revision, chart path, automated sync, prune, and self-heal settings.
+
+![Argo CD source and sync policy](docs/screenshots/argocd-source-sync-policy.png)
+
+### CI/CD Pipeline
+
+GitHub Actions runs quality gates, builds the Docker image, scans it, pushes it, and updates Helm values for GitOps deployment.
+
+![GitHub Actions pipeline success](docs/screenshots/github-actions-success.png)
+
 ## Features
 
 - Fully functional Tic Tac Toe gameplay
