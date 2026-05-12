@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: bader1937/tic-tac-game
-  tag: sha-9d0c22bba7928726d45bc4df92d1dc5d91d71f05
+  tag: sha-ccaa7c5733a28bcfcae447f84ee33d14ff23b558
   pullPolicy: Always
 
 service:
