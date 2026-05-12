@@ -11,7 +11,6 @@ Clone the project:
 ```bash
 git clone https://github.com/bader2424/tic-tac-game.git
 cd tic-tac-game
-git switch helm
 ```
 
 Install dependencies:
